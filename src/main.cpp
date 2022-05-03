@@ -79,11 +79,15 @@ void autonomous() {
 	pros::Motor liftRB	(1, 0);
 	pros::Motor liftLT	(10, 1);
 	pros::Motor liftLB	(9, 1);
-	pros::ADIDigitalOut rClaw('b');
-	pros::ADIDigitalOut lClaw('a');
-	pros::ADIDigitalIn lBump('c');
-	pros::ADIDigitalIn rBump('d');
+	//pros::Motor claw		(5, 0);
 	pros::Imu Inert			(6);
+	pros::Rotation rot	(7);
+	pros::ADIDigitalIn rButton({{5, 'b'}});
+	pros::ADIDigitalIn lButton({{5, 'd'}});
+	pros::ADIDigitalIn armLimit('d');
+	pros::ADIDigitalOut rClaw({{5, 'e'}});
+	pros::ADIDigitalOut lClaw({{5, 'f'}});
+	pros::ADIDigitalOut ring({{5, 'a'}});
 
 	//motors{16,17,18,19,20}
 
@@ -169,12 +173,12 @@ void autonomous() {
 			.withDimensions(AbstractMotor::gearset::green, {{5.875_in, 17.6_in}, imev5GreenTPR})
 			.withOdometry()
 			.withMaxVelocity(180)
-			.withMaxVoltage(6000)
+			.withMaxVoltage(12000)
 			.buildOdometry();
 		std::shared_ptr<AsyncPositionController<double, double>> lift =
 		AsyncPosControllerBuilder()
 			.withMotor({10, 9, 3, 1})
-			.withMaxVelocity(80)
+			.withMaxVelocity(150)
 			//.withMaxVelocity(80)
 			//.withGains({liftkP, liftkI, liftkD})
 			.build();
@@ -190,37 +194,46 @@ void autonomous() {
 		//tail->setTarget(4000);//up max
 		//chassis->turnAngle(360_deg);
 		//tail->setTarget(6000);//up max
-		lClaw.set_value(HIGH);
-		rClaw.set_value(HIGH);
+		lift->tarePosition();
+		lClaw.set_value(LOW);
+		rClaw.set_value(LOW);
 		lift->setTarget(200);
 		pros::delay(50);
-		chassis->moveDistanceAsync(60_in);
+		chassis->moveDistanceAsync(65_in);
 
 		lift->waitUntilSettled();
 		lift->setTarget(0);
+		pros::delay(200);
+		lift->tarePosition();
 		while(r1.get_actual_velocity() > 160) {
-			if (lBump.get_new_press()) {
-				lClaw.set_value(LOW);
+			if (lButton.get_new_press()) {
+				lClaw.set_value(HIGH);
+				chassis->stop();
+				lift->setTarget(100);
 			}
 			pros::delay(10);
 		}
+		lClaw.set_value(HIGH);
+		chassis->stop();
+		//lift->tarePosition();
 		chassis->waitUntilSettled();
-		lift->tarePosition();
 		chassis->setMaxVelocity(80);
+		//pros::delay(30000);
 		chassis->moveDistance(-30_in);
-		chassis->turnAngle(28_deg);
+		chassis->turnAngle(30_deg);
 		chassis->moveDistanceAsync(48_in);
 		pros::delay(200); //wait for drivetrain to speed up
 		while(r1.get_actual_velocity() > 160) {
-			if (rBump.get_new_press()) {
-				rClaw.set_value(LOW);
+			if (rButton.get_new_press()) {
+				rClaw.set_value(HIGH);
 			}
 			pros::delay(10);
 		}
+
 		chassis->waitUntilSettled();
 		chassis->moveDistance(-48_in);
-		chassis->turnAngle(-28_deg);
-		chassis->moveDistance(-36_in);
+		chassis->turnAngle(10_deg);
+		chassis->moveDistance(-50_in);
 		pros::delay(100000);
 		tailR.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
 		tailL.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
@@ -283,11 +296,13 @@ void opcontrol() {
 	pros::Motor liftLB	(9, 1);
 	//pros::Motor claw		(5, 0);
 	pros::Imu Inert			(6);
-	pros::ADIDigitalIn rButton({{5, 'g'}});
-	pros::ADIDigitalIn lButton({{5, 'h'}});
+	pros::Rotation rot	(7);
+	pros::ADIDigitalIn rButton({{5, 'b'}});
+	pros::ADIDigitalIn lButton({{5, 'd'}});
 	pros::ADIDigitalIn armLimit('d');
 	pros::ADIDigitalOut rClaw({{5, 'e'}});
 	pros::ADIDigitalOut lClaw({{5, 'f'}});
+	pros::ADIDigitalOut ring({{5, 'a'}});
 
 
 	//pros::Rotation r(1);
@@ -323,6 +338,13 @@ void opcontrol() {
 	int count = 0;
 
 	bool rReady, lReady;
+	bool toLimit = false;
+	bool toTarget =  false;
+	int armSpeed;
+	int armTarget;
+	ring.set_value(HIGH);
+
+	rot.reset_position();
 
 	while (true) {
 
@@ -364,13 +386,47 @@ void opcontrol() {
 			liftLB.move_velocity(0);
 		}
 
-		if (master.get_digital(DIGITAL_UP)) {
+		if (master.get_digital(DIGITAL_RIGHT)) {
 			liftRT.move(-200);
 			liftRB.move(-200);
 			liftLT.move(-200);
 			liftLB.move(-200);
 		}
+		if (master.get_digital(DIGITAL_DOWN)) {
+			toLimit = true;
+		}
+		else if (master.get_digital(DIGITAL_UP)) {
+			toTarget = true;
+			armTarget = 11000;
+		}
 
+		if (armLimit.get_value()) {
+			rot.reset_position();
+		}
+
+		if (toLimit) {
+			if (armLimit.get_value() == HIGH) {
+				toLimit = false;
+			}
+			else {
+				liftRT.move(-160);
+				liftRB.move(-160);
+				liftLT.move(-160);
+				liftLB.move(-160);
+			}
+		}
+		else if (toTarget){
+			if (rot.get_position() > armTarget + 400){armSpeed = -120;}
+			else if (rot.get_position() < armTarget - 400){armSpeed = 120;}
+			else {toTarget = false;armSpeed = 0;}
+			liftRT.move_velocity(armSpeed);
+			liftRB.move_velocity(armSpeed);
+			liftLT.move_velocity(armSpeed);
+			liftLB.move_velocity(armSpeed);
+		}
+		else{}
+
+		std::cout << rot.get_position() << std::endl;
 
 
 		/*//__arm
@@ -425,7 +481,7 @@ void opcontrol() {
 		}
 
 		//tail
-		if (master.get_digital(DIGITAL_A)) {
+		if (master.get_digital(DIGITAL_Y)) {
 			tailR.move_velocity(170);
 			tailL.move_velocity(170);
 		}
@@ -436,6 +492,14 @@ void opcontrol() {
 		else {
 			tailR.move_velocity(0);
 			tailL.move_velocity(0);
+		}
+
+		//rangs
+		if (master.get_digital(DIGITAL_LEFT)) {
+			ring.set_value(LOW);
+		}
+		else {
+			ring.set_value(HIGH);
 		}
 
 		//reset
