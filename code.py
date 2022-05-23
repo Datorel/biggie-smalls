@@ -1,10 +1,15 @@
+# This will add LED functionality to the V5 brain
+# An Adafruit Gemma M0 is required, along with any neopixel lights you desire
+# Gemma M0 runs off of 5V power, not 12V
+# According to the game manual, page C5, section VUR10, neopixel lights are allowed on the robot
+
 # Save this file as "code.py" on the Gemma M0
+# Install Circuitpython library in VSCode
 # This file does not need to be added to the V5, only to the Gemma
 
 # Only standard Neopixel lights will work with this setup
 # Once you have selected a light strip, change your num_pix to the number of LED lights you have
 # Connect DOut to DOut, D1 to D1, and Vcc to VIn
-
 # You can use either the JST connector or the USB connector for power
 
 from ast import AsyncFunctionDef

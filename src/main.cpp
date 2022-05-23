@@ -96,6 +96,15 @@ void autonomous() {
 
   vision_sensor.set_signature(YELLER, &YEL_GOAL);
 
+	/*
+
+	Interesting use of the vision sensor. Calibrating off of the grey towers
+	may offer more options using a nested if loop if it can target a specific color 
+	then center based on the tower. Based on the documentation, you could also look 
+	into measuring the width of the tower to gauge distance to target the closest one.
+
+	*/
+
 	//vision::signature YELLER (1, 1281, 1963, 1622, -3975, -3271, -3623, 3.000, 0);
 	//vision::signature BLEW (2, -2269, -785, -1527, 4699, 7835, 6267, 2.200, 0);
 	//vision::signature READ (3, 6337, 8103, 7220, -1087, -241, -664, 3.000, 0);
