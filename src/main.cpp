@@ -29,14 +29,12 @@ void initialize() {
 	pros::Imu Inert			(6);
 	Inert.reset();
 }
-
 /**
  * Runs while the robot is in the disabled state of Field Management System or
  * the VEX Competition Switch, following either autonomous or opcontrol. When
  * the robot is enabled, this task will exit.
  */
 void disabled() {}
-
 /**
  * Runs after initialize(), and before autonomous when connected to the Field
  * Management System or the VEX Competition Switch. This is intended for
@@ -47,7 +45,6 @@ void disabled() {}
  * starts.
  */
 void competition_initialize() {}
-
 /**
  * Runs the user autonomous code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -60,7 +57,6 @@ void competition_initialize() {}
  * from where it left off.
  */
 void autonomous() {
-
 
 	pros::Controller master(pros::E_CONTROLLER_MASTER);
 	pros::Motor r1			(12, 0);
@@ -98,7 +94,6 @@ void autonomous() {
 
   pros::vision_signature_s_t YEL_GOAL = pros::Vision::signature_from_utility(YELLER, 1281, 1963, 1622, -3975, -3271, -3623, 3.000, 0);
 
-
   vision_sensor.set_signature(YELLER, &YEL_GOAL);
 
 	//vision::signature YELLER (1, 1281, 1963, 1622, -3975, -3271, -3623, 3.000, 0);
@@ -131,7 +126,6 @@ void autonomous() {
 		rf.move_velocity(0);
 		lr.move_velocity(0);
 		rr.move_velocity(0);
-
 	}
 
 	else if (select == 1) {
@@ -229,7 +223,6 @@ void autonomous() {
 			}
 			pros::delay(10);
 		}
-
 		chassis->waitUntilSettled();
 		chassis->moveDistance(-48_in);
 		chassis->turnAngle(10_deg);
@@ -237,7 +230,6 @@ void autonomous() {
 		pros::delay(100000);
 		tailR.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
 		tailL.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-
 		/*
 		claw.move_velocity(-160);
 		pros::delay(500);
@@ -262,7 +254,6 @@ void autonomous() {
 		//tail->setTarget(4000);//up max
 	}
 }
-
 /**
  * Runs the operator control code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -303,7 +294,6 @@ void opcontrol() {
 	pros::ADIDigitalOut rClaw({{5, 'e'}});
 	pros::ADIDigitalOut lClaw({{5, 'f'}});
 	pros::ADIDigitalOut ring({{5, 'a'}});
-
 
 	//pros::Rotation r(1);
 	//pros::ADIDigitalOut stab('g');
@@ -350,8 +340,8 @@ void opcontrol() {
 		//std::cout << std::to_string(lClaw.get_value()) << std::endl;
 		//rClaw.set_value(rButton.get_value());
 		//lClaw.set_value(lButton.get_value());
-
 		//drivetrain
+
 		rDrive = master.get_analog(ANALOG_RIGHT_Y) - master.get_analog(ANALOG_RIGHT_X);
 		lDrive = master.get_analog(ANALOG_RIGHT_Y) + master.get_analog(ANALOG_RIGHT_X);
 		l1.move(lDrive);
@@ -425,7 +415,6 @@ void opcontrol() {
 		else{}
 
 		std::cout << rot.get_position() << std::endl;
-
 
 		/*//__arm
 		//printf("Angle: %i \n", r.get_position());
