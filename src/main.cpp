@@ -290,10 +290,10 @@ void opcontrol() {
 	pros::Motor lf			(16, 0);
 	pros::Motor tailR		(8, 1);
 	pros::Motor tailL		(2, 0);
-	pros::Motor liftRT	(3, 0);
-	pros::Motor liftRB	(1, 0);
-	pros::Motor liftLT	(10, 1);
-	pros::Motor liftLB	(9, 1);
+	pros::Motor liftRT	    (3, 0);
+	pros::Motor liftRB	    (1, 0);
+	pros::Motor liftLT	    (10, 1);
+	pros::Motor liftLB	    (9, 1);
 	//pros::Motor claw		(5, 0);
 	pros::Imu Inert			(6);
 	pros::Rotation rot	(7);
@@ -331,9 +331,7 @@ void opcontrol() {
 	liftLT.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
 	liftLB.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
 	//claw.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
-
-
-
+	
 	int resetToggle = 0;
 	int count = 0;
 
